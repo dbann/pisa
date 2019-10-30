@@ -1,29 +1,36 @@
 ///////   Syntax to conduct analyses to reproduce Bann et al. (paper using physical activity data from PISA 2015)
-///////   Created XX/XX/2018
+///////   Last updated: 30/10/2019
 
 ///////   Before starting, first run cleaning/derivation do file 
 ///////   Download auxiliary data sets from https://github.com/dbann/pisa
 ///////   These datasets are: "lookup_code_abbcountry.dta", "wbank_selected_variables.dta", "pisa_unesco1.dta", "whoob.dta" and "whopa.dta"			
 ///////   These should be placed in the 'data' folder/pathway listed below
 
-*this line of code prevents one from accidentally running from the begining
+this line of code prevents one from accidentally running from the begining
 
 
 ///////   Make sure to change directories to your own machine
 ********************************************************************************
-
+global data "YOUR FILE PATH FOR SOURCE DATA HERE"
+global output "YOUR FILE PATH FOR OUTPUT HERE"
 ********************************************************************************
+
 
 
 /////// Install 'repest', the user written package for analysing large scale assessment data
 /////// Avvisati F, Keslair F. REPEST: Stata module to run estimations with weighted replicate samples and plausible values. 2017
 
-*ssc install repest
+ssc install repest
 
 /////// Install 'labutil', the user written package for managing value and variable labels
-/////// Cox,N. 'LABUTIL': modules for managing value and variable labels. 2013
+/////// Cox, N. 'LABUTIL': modules for managing value and variable labels. 2013
 
-*ssc install labutil
+ssc install labutil
+
+/////// Install 'sdecode', the user written package for decoding string variable 
+/////// Newson, R. 'SDECODE'. 2013
+
+ssc install sdecode
 
 
 ///////   Output datafiles for descriptive comparisons of physical activity outcomes
@@ -1117,7 +1124,7 @@ foreach var of global outcomes {
 	}			
 	
 ***Summary statistics of outcomes for wealth quintiles by gender separately
-local gender `"Female Male"'
+local gender `"female male"'
 foreach gen of local gender{
 foreach var of global outcomes {                                                
 	use "$output/`var'_wealthq_`gen'.dta", clear
@@ -1148,9 +1155,7 @@ foreach var of global outcomes {
 	sort country
 	order country
 	
-	   
-	
-	forval i=0(1)5{
+	 foreach i of numlist 1 5{
 		if `i' == 1 {
 		capture rename _`i'_`var'_mean_b Mean_Q1_`var'_`gen'
 		capture rename _`i'_`var'_p50_b Median_Q1_`var'_`gen'
@@ -1164,11 +1169,13 @@ foreach var of global outcomes {
 		capture rename _`i'_`var'_sd_se SD_Q5_`var'_`gen'
 		capture rename _`i'_`var'_N_b N_Q5_`var'_`gen'
 	}
+	
+	
+
 	}
 	
-	keep country Mean* Median* SD* N*
 	
-	export excel using "$output/SupplementaryTables", sheet("Table 2 SexWealth `var'") sheetreplace ///															
+	export excel using "$output/SupplementaryTables", sheet("Table 2 `Gender' Wealth `var'") sheetreplace ///															
 		firstrow(variables)	
 	}
 	}
